@@ -23,8 +23,57 @@ def timeit(func):
 
 def draw_simple_line(start_x, start_y, end_x, end_y, img_array, intenzity=255):
 
-    #y = mx + b
-    pass
+    x,y,last_x,last_y = 0,0,0,0
+    if(start_x < end_x):
+        x = start_x
+        y = start_y
+        last_x = end_x
+        last_y = end_y
+    else:
+        #fliping the points so we can always draw from left to right
+        x = end_x
+        y = end_y
+        last_x = start_x
+        last_y = start_y 
+
+    #helping swap for when the X values are equal
+    if(x==last_x):
+        y = min(start_y, end_y)
+        last_y = max(start_y, end_y)
+
+    #the difference in coordinates of the two points used to determine slope of the line
+    dx = last_x - x
+    dy = last_y - y # if dy is negative that means the last point is bellow the first
+
+    if dx == 0:
+        #when dx is 0 that means the X of both points are equal so we just draw streight line without more calculations
+        while y <= last_y:
+            y+=1
+            img_array[1079-y][x] = intenzity
+        return
+    
+    tan = dy/dx
+    
+    while x != last_x or (y != last_y if (tan>1 or tan<-1) else False):
+        
+        
+        if tan>1 or tan<-1:
+            #for angled below -45 and above 45 degree we have to change the y value first 
+            #because it can pass through the last point of thel ine without breaking the loop
+            img_array[1079-y][x] = intenzity
+            y+= 1 if tan>0 else -1
+            temp_x = (y-last_y)/tan + last_x
+            x = math.ceil(temp_x) if temp_x>math.floor(temp_x)+0.5 else math.floor(temp_x)
+            
+            
+        else:
+            #calculate the Y value for the pixel we have to color
+            temp_y = last_y + tan*(x - last_x)
+            y = math.ceil(temp_y) if temp_y>math.floor(temp_y)+0.5 else math.floor(temp_y)
+            img_array[1079-y][x] = intenzity
+            x+= 1 
+        
+        
 
 
 def draw_mid_point_line(start_x, start_y, end_x, end_y, img_array, intenzity=255):
@@ -135,7 +184,7 @@ def draw_mid_point_line(start_x, start_y, end_x, end_y, img_array, intenzity=255
             elif(tan<-1):
                 y-=1
             else:
-                y+= 0 if dy>0 else -1
+                y+= 0 if tan>0 else -1
                 x+= 1 
         else :
             #the decision var is above the line
@@ -146,7 +195,7 @@ def draw_mid_point_line(start_x, start_y, end_x, end_y, img_array, intenzity=255
                 y-=1
                 x+=1
             else:
-                y+= 1 if dy>0 else 0
+                y+= 1 if tan>0 else 0
                 x+= 1
         #we color the pixel after all the caltulations
         if y<-1 or x>1919:
@@ -176,6 +225,7 @@ def file_test_simple_line():
     draw_simple_line(0,1,1919,2,output_array)
     draw_simple_line(1,1079,0,0,output_array)
     draw_simple_line(1918,1079,1919,0,output_array)
+    draw_simple_line(1444, 436, 1681, 797,output_array)
 
     return output_array
 
@@ -202,6 +252,7 @@ def file_test_mid_point():
     draw_mid_point_line(0,1,1919,2,output_array)
     draw_mid_point_line(1,1079,0,0,output_array)
     draw_mid_point_line(1918,1079,1919,0,output_array)
+    draw_mid_point_line(1444, 436, 1681, 797,output_array)
 
     return output_array
 
